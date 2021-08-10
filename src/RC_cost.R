@@ -26,11 +26,9 @@ gravity <- data.frame("story"=1:n_story,
 
 # Perimeter column design parameters
 column <- data.frame("story"=1:n_story,
-                    ## TODO: generalize with ifelse
                     "d"=(rep(c(36,30),times=c(8,4))),
                     "b"=(rep(c(24),times=c(n_story))),
                     "h"=(rep(c(15,13),times=c(1,n_story-1))),
-                    ## TODO: generalize with ifelse
                     "in_ratio"=(rep(c(0.0127,0.0131,0.0109),times=c(8,2,2))),
                     "ex_ratio"=(rep(c(0.0182,0.0109),times=c(1,n_story))),
                     "insh_ratio"=(rep(c(0.0093),times=c(n_story))),
@@ -62,6 +60,17 @@ slab <- data.frame("story"=1:n_story,
                    "l"=(rep(c(l_slab),times=c(n_story)))
 )
 
+# Update for other stories
+if (n_story == 4) {
+    column$d = rep(c(36,30), times=c(2,2))
+    column$in_ratio = rep(c(0.0127,0.0131,0.0109),times=c(2,1,1))
+    ## TODO: update beam$top_ratio, etc
+} else if (n_story == 20) {
+    column$d = rep(c(36,30), times=c(12,8))
+    column$in_ratio = rep(c(0.0127,0.0131,0.0109),times=c(12,4,4))
+    ## TODO: update beam$top_ratio, etc
+}
+
 # Assumptions
 n_col = 12  # Number of steel bars in the column
 n_col_tie = 6  # Number of shear reinforcements in the column
@@ -75,11 +84,11 @@ n_elevators = 1  # Number of elevators
 
 ############################### Calculation #####################################
 # Gravity columns
-## TODO: is this specific to 12 story?
+## TODO: is the length of this vector specific to 12 story?
 col_s <- c(col_s3, col_s4, col_s5, col_s6, col_s7, col_s8, col_s9, col_s10, col_s11, col_s14, col_s18)
 
 selection <- function(x){
-  ## TODO: is this specific to 12 story?
+  ## TODO: is the length of this vector specific to 12 story?
   bar_size <- c(0.11, 0.2, 0.31, 0.44, 0.6, 0.79, 1, 1.27, 1.56, 2.25, 4)
   temp <- bar_size - x
   upper <- min(bar_size[temp > 0])
@@ -87,14 +96,12 @@ selection <- function(x){
   col_s[match(upper,bar_size)]
 }
 
-## TODO: is 144 specific to 12 story?
 gra_concrete = (gravity$d * gravity$b / 144) * gravity$h * c1   # 8000 psi concrete
 
 gra_steel = (gravity$d * gravity$b * gravity$ratio)/8  # assuming 8 steel bars per column
 gra_steel <- sapply(gra_steel, selection) * 8 * gravity$h * n_gcol  # assuming 8 steel bars per column
   
 gra_tie = (gravity$d * gravity$b * gravity$sh_ratio)/n_col_tie
-## TODO: are these parameters specific to 12 story?
 gra_tie <- sapply(gra_tie, selection) * (gravity$d *6 + gravity$b * 2) /12 * gravity$h * 12 / gravity$sh_spacing * n_gcol
   
 gra_total = sum(gra_concrete) + sum(gra_steel) + sum(gra_tie)
@@ -110,22 +117,20 @@ col_ex_steel = (column$d * column$b * column$ex_ratio)/n_col
 col_ex_steel <- sapply(col_ex_steel, selection) * n_col * column$h * 4
 
 col_in_tie = (column$d * column$b * column$insh_ratio)/n_col_tie
-## TODO: are these parameters specific to 12 story?
 col_in_tie <- sapply(col_in_tie, selection) * (4 + 2/3) * (column$d + column$b) /12 * column$h * 12 / column$insh_spacing * n_col
 
 col_ex_tie = (column$d * column$b * column$exsh_ratio)/n_col_tie
-## TODO: are these parameters specific to 12 story?
 col_ex_tie <- sapply(col_ex_tie, selection) * (4 + 2/3) * (column$d + column$b) /12 * column$h * 12 / column$exsh_spacing * n_col
 
 col_total = sum(col_concrete) + sum(col_in_steel) + sum(col_ex_steel) + sum(col_in_tie) + sum(col_ex_tie)
 
 
 # Beams
-## TODO: is this specific to 12 story?
+## TODO: is the length of this vector specific to 12 story?
 bm_s <- c(bm_s3, bm_s4, bm_s5, bm_s6, bm_s7, bm_s8, bm_s9, bm_s10, bm_s11, bm_s14, bm_s18)
 
 selection2 <- function(x){
-  ## TODO: is this specific to 12 story?
+  ## TODO: is the length of this vector specific to 12 story?
   bar_size <- c(0.11, 0.2, 0.31, 0.44, 0.6, 0.79, 1, 1.27, 1.56, 2.25, 4)
   temp <- bar_size - x
   upper <- min(bar_size[temp > 0])
@@ -133,7 +138,6 @@ selection2 <- function(x){
   bm_s[match(upper,bar_size)]
 }
 
-## TODO: is 144 specific to 12 story?
 bm_concrete = (beam$d * beam$b / 144) * beam$l * c2   # 5000 psi concrete
 
 bm_top_steel = (beam$d * beam$b * beam$top_ratio) / n_bm_top
@@ -143,14 +147,12 @@ bm_btm_steel = (beam$d * beam$b * beam$btm_ratio) / n_bm_btm
 bm_btm_steel <- sapply(bm_btm_steel, selection2) * n_bm_btm * beam$l 
   
 bm_stirrup = (beam$d * beam$b * beam$sh_ratio) / n_bm_stirrup
-## TODO: are these parameters specific to 12 story?
 bm_stirrup <- sapply(bm_stirrup, selection2) * (beam$d * 6 + beam$b * 2) /12 * beam$l * 12 / beam$sh_spacing
 
 bm_total = sum(bm_concrete) + sum(bm_top_steel) + sum(bm_btm_steel) + sum(bm_stirrup)
 
 
 # Slabs
-## TODO: is this specific to 12 story?
 slab = (slab$d / 12) * area * slab_price
 slab_total = sum(slab)
 
