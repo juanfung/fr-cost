@@ -42,10 +42,10 @@ Col_ex_sh_spacing = gsub("\\[|\\]", "", gsub(".* ", "", sub(".*x", "", raw1$Cex)
 
 Col_in_d = sub("x.*", "", raw1$Cin)
 Col_in_b = gsub(" .*$", "", sub(".*x", "", raw1$Cin))
-Col_in_ratio = sub(",.*", "", gsub("\\(|\\)", "", raw2$Cin)) 
+Col_in_ratio = sub(",.*", "", gsub("\\(|\\)", "", raw2$Cin))
 Col_in_sh_ratio = sub(".*, ", "", gsub("\\(|\\)", "", raw2$Cin))
 Col_in_sh_spacing = gsub("\\[|\\]", "", gsub(".* ", "", sub(".*x", "", raw1$Cin)))
-  
+
 Bm_d = sub("x.*", "", raw1$Bex)
 Bm_b = gsub(" .*$", "", sub(".*x", "", raw1$Bex))
 Bm_top_ratio = sub(",.*", "", gsub("\\(|\\)", "", raw2$Bex))
@@ -56,22 +56,22 @@ Bm_sh_spacing = gsub("\\[|\\]", "", gsub(".* ", "", sub(".*x", "", raw1$Bex)))
 
 
 # Gravity column design parameters
-gravity <- data.frame("story"=1:n_story,
+gravity <- data.frame("story"=n_story:1,  # Reversed story number, consistent with inputs
                       "d"=(rep(c(d_gravity),times=c(n_story))),
                       "b"=(rep(c(b_gravity),times=c(n_story))),
-                      "h"=(rep(c(15,13),times=c(1,n_story-1))),
+                      "h"=(rep(c(13,15),times=c(n_story-1,1))),
                       "ratio"=(rep(c(0.025),times=c(n_story))),
                       "sh_ratio"=as.numeric(Col_in_sh_ratio),
                       "sh_spacing"=as.numeric(Col_in_sh_spacing)
 )
 
 # Perimeter column design parameters
-column <- data.frame("story"=1:n_story,
+column <- data.frame("story"=n_story:1,  # Reversed story number, consistent with inputs
                      "in_d"=as.numeric(Col_in_d),
                      "in_b"=as.numeric(Col_in_b),
                      "ex_d"=as.numeric(Col_ex_d),
                      "ex_b"=as.numeric(Col_ex_b),
-                     "h"=(rep(c(15,13),times=c(1,n_story-1))),
+                     "h"=(rep(c(13,15),times=c(n_story-1,1))),
                      "in_ratio"=as.numeric(Col_in_ratio),
                      "ex_ratio"=as.numeric(Col_ex_ratio),
                      "insh_ratio"=as.numeric(Col_in_sh_ratio),
@@ -81,7 +81,7 @@ column <- data.frame("story"=1:n_story,
 )
 
 # Perimeter beam design parameters
-beam <- data.frame("story"=1:n_story,
+beam <- data.frame("story"=n_story:1,  # Reversed story number, consistent with inputs
                    "d"=as.numeric(Bm_d),
                    "b"=as.numeric(Bm_b),
                    "l"=(rep(c(l_bm),times=c(n_story))),
@@ -92,7 +92,7 @@ beam <- data.frame("story"=1:n_story,
 )
 
 # Slab design parameters
-slab <- data.frame("story"=1:n_story,
+slab <- data.frame("story"=n_story:1,
                    "d"=(rep(c(d_slab),times=c(n_story))),
                    "b"=(rep(c(l_slab),times=c(n_story))),
                    "l"=(rep(c(l_slab),times=c(n_story)))
@@ -114,17 +114,17 @@ gra_concrete = (gravity$d * gravity$b / 144) * gravity$h * c1   # 8000 psi concr
 
 gra_steel = (gravity$d * gravity$b * gravity$ratio)/8  # assuming 8 steel bars per column
 gra_steel <- sapply(gra_steel, selection) * 8 * gravity$h * n_gcol  # assuming 8 steel bars per column
-  
+
 gra_tie = (gravity$d * gravity$b * gravity$sh_ratio)/n_col_tie
 gra_tie <- sapply(gra_tie, selection) * (gravity$d * 6 + gravity$b * 2) /12 * gravity$h * 12 / gravity$sh_spacing * n_gcol
-  
+
 gra_total = sum(gra_concrete) + sum(gra_steel) + sum(gra_tie)
 
 
 # Perimeter columns
 col_concrete = (column$in_d * column$in_b / 144) * column$h * c1 * (n_fcol - 4) +  # 8000 psi concrete
   (column$ex_d * column$ex_b / 144) * column$h * c1 * 4
-  
+
 col_in_steel = (column$in_d * column$in_b * column$in_ratio)/n_col
 col_in_steel <- sapply(col_in_steel, selection) * n_col * column$h * (n_fcol - 4)
 
@@ -154,11 +154,11 @@ selection2 <- function(x){
 bm_concrete = (beam$d * beam$b / 144) * beam$l * c2   # 5000 psi concrete
 
 bm_top_steel = (beam$d * beam$b * beam$top_ratio) / n_bm_top
-bm_top_steel <- sapply(bm_top_steel, selection2) * n_bm_top * beam$l 
-  
+bm_top_steel <- sapply(bm_top_steel, selection2) * n_bm_top * beam$l
+
 bm_btm_steel = (beam$d * beam$b * beam$btm_ratio) / n_bm_btm
-bm_btm_steel <- sapply(bm_btm_steel, selection2) * n_bm_btm * beam$l 
-  
+bm_btm_steel <- sapply(bm_btm_steel, selection2) * n_bm_btm * beam$l
+
 bm_stirrup = (beam$d * beam$b * beam$sh_ratio) / n_bm_stirrup
 bm_stirrup <- sapply(bm_stirrup, selection2) * (beam$d * 6 + beam$b * 2) /12 * beam$l * 12 / beam$sh_spacing
 
@@ -170,7 +170,7 @@ slab = (slab$d / 12) * area * slab_price
 slab_total = sum(slab)
 
 # Exterior walls
-wall_total = (H * l_bm - n_story * n_windows * window_area) * wall_price  
+wall_total = (H * l_bm - n_story * n_windows * window_area) * wall_price
 
 # Exterior windows
 window_total = n_story * n_windows * (window_glass_price + window_frame_price)

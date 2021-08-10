@@ -84,7 +84,7 @@ n_elevators = 1  # Number of elevators
 
 ############################### Calculation #####################################
 # Gravity columns
-## TODO: Types of steel bars used in columns
+## Type of steel bars used in columns
 col_s <- c(col_s3, col_s4, col_s5, col_s6, col_s7, col_s8, col_s9, col_s10, col_s11, col_s14, col_s18)
 
 ## Select steel bars for columns
@@ -118,16 +118,16 @@ col_ex_steel = (column$d * column$b * column$ex_ratio)/n_col
 col_ex_steel <- sapply(col_ex_steel, selection) * n_col * column$h * 4
 
 col_in_tie = (column$d * column$b * column$insh_ratio)/n_col_tie
-col_in_tie <- sapply(col_in_tie, selection) * (4 + 2/3) * (column$d + column$b) /12 * column$h * 12 / column$insh_spacing * n_col
+col_in_tie <- sapply(col_in_tie, selection) * (4 + 2/3) * (column$d + column$b) /12 * column$h * 12 / column$insh_spacing * (n_fcol - 4)
 
 col_ex_tie = (column$d * column$b * column$exsh_ratio)/n_col_tie
-col_ex_tie <- sapply(col_ex_tie, selection) * (4 + 2/3) * (column$d + column$b) /12 * column$h * 12 / column$exsh_spacing * n_col
+col_ex_tie <- sapply(col_ex_tie, selection) * (4 + 2/3) * (column$d + column$b) /12 * column$h * 12 / column$exsh_spacing * 4
 
 col_total = sum(col_concrete) + sum(col_in_steel) + sum(col_ex_steel) + sum(col_in_tie) + sum(col_ex_tie)
 
 
 # Beams
-## TODO: Type of steel bars used in beams
+## Type of steel bars used in beams
 bm_s <- c(bm_s3, bm_s4, bm_s5, bm_s6, bm_s7, bm_s8, bm_s9, bm_s10, bm_s11, bm_s14, bm_s18)
 
 ## Select steel bars for beams
