@@ -1,4 +1,4 @@
-
+## RC cost estimation, including concrete, steel, forming, placing, finishing
 setwd("/Users/ynz23/Documents/R\ scripts")
 source("RC_data.R")
 
@@ -6,7 +6,7 @@ source("RC_data.R")
 raw <- read.csv(file = 'test.csv')
 
 # Building design parameters
-n_story = 12           # Number of stories
+n_story = 4           # Number of stories
 l1 = 120               # Dimension in one direction (ft)
 l2 = 120               # Dimension in another direction (ft)
 H = sum(rep(c(15,13),times=c(1,n_story-1)))           # Building height (ft)
@@ -16,8 +16,8 @@ n_fcol = 24            # Number of perimeter columns per floor
 l_bm = 2 * (l1 + l2)   # length of perimeter beams per floor (ft)
 l_slab = 20            # span of slab (ft)
 d_slab = 8             # thickness of slab (in)
-b_gravity = 24         # shorter side of gravity column (in)
-d_gravity = 24         # longer side of gravity column (in)
+b_gravity = 18         # shorter side of gravity column (in) 24, 18
+d_gravity = 18         # longer side of gravity column (in) 24, 18
 
 
 # Assumptions
@@ -26,10 +26,6 @@ n_col_tie = 6                # Number of shear reinforcements in the column
 n_bm_top = 4                 # Number of steel bars at top
 n_bm_btm = 4                 # Number of steel bars at bottom
 n_bm_stirrup = 6             # Number of shear reinforcements in the beam
-n_windows = 24               # Number of exterior windows per floor
-n_doors = 1                  # Number of exterior doors
-n_stairs = (n_story -1) * 2  # Number of stairs
-n_elevators = 1              # Number of elevators
 
 ############################### Data processing #####################################
 raw1 <- raw[seq(1, n_story*2-1, by=2),]
@@ -196,20 +192,6 @@ sl_finishing = finishing * area * n_story
 slab_total = sum(sl_concrete) + sum(sl_steel) + sum(sl_forming) + 
   sum(sl_placing) + sum(sl_finishing)
 
-# Exterior walls
-# wall_total = (H * l_bm - n_story * n_windows * window_area) * wall_price  
-
-# Exterior windows
-# window_total = n_story * n_windows * (window_glass_price + window_frame_price)
-
-# Exterior doors
-# door_total = n_doors * door_price
-
-# Stairs
-# stair_total = n_stairs * stair_price
-
-# Elevators
-# elevator_total = n_elevators * elevator_price
 
 ################################### Outputs #####################################
 total <- c(gra_total, col_total, bm_total, slab_total)
